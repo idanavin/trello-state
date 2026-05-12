@@ -1,0 +1,405 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #1a1a2e;
+  color: #e0e0e0;
+  height: 100vh;
+  overflow: hidden;
+}
+
+#root {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+button {
+  cursor: pointer;
+}
+
+/* App layout */
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+  background: #16213e;
+  border-bottom: 1px solid #0f3460;
+  flex-shrink: 0;
+}
+
+.app-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #e94560;
+}
+
+.app-nav {
+  display: flex;
+  gap: 8px;
+}
+
+.nav-link {
+  padding: 6px 16px;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #a0a0b0;
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+}
+
+.nav-link:hover {
+  background: #0f3460;
+  color: #e0e0e0;
+}
+
+.nav-link--active {
+  background: #e94560;
+  color: white;
+}
+
+.nav-link--active:hover {
+  background: #c73650;
+  color: white;
+}
+
+.app-main {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Single board page */
+.page-single {
+  flex: 1;
+  overflow: auto;
+}
+
+/* Compare page */
+.page-compare {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.compare-divider {
+  width: 1px;
+  background: #0f3460;
+  flex-shrink: 0;
+}
+
+/* Board instance (used in both single and compare) */
+.board-instance {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.board-instance-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  background: #111827;
+  border-bottom: 1px solid #0f3460;
+  flex-shrink: 0;
+}
+
+.board-instance-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #a0c0e0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.board-instance-body {
+  flex: 1;
+  overflow: auto;
+  padding: 20px;
+}
+
+/* Presence bar */
+.presence-bar {
+  font-size: 0.85rem;
+  color: #a0a0b0;
+}
+
+.presence-label {
+  font-weight: 600;
+  color: #c0c0d0;
+}
+
+/* Kanban board */
+.kanban-board {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  min-width: 700px;
+}
+
+/* Column */
+.column {
+  flex: 1;
+  min-width: 260px;
+  max-width: 340px;
+  background: #16213e;
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.column-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.column-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #c0c0d0;
+}
+
+.column-count {
+  font-size: 0.8rem;
+  background: #0f3460;
+  color: #a0a0b0;
+  border-radius: 12px;
+  padding: 1px 8px;
+}
+
+.column-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 40px;
+}
+
+.btn-add-card {
+  width: 100%;
+  background: transparent;
+  border: 1px dashed #0f3460;
+  border-radius: 6px;
+  color: #a0a0b0;
+  padding: 8px;
+  font-size: 0.875rem;
+  transition: background 0.15s, color 0.15s;
+}
+
+.btn-add-card:hover {
+  background: #0f3460;
+  color: #e0e0e0;
+}
+
+/* Card */
+.card {
+  background: #1e2d50;
+  border-radius: 6px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border: 1px solid #0f3460;
+}
+
+.card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.card-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #e0e0e0;
+  flex: 1;
+}
+
+.card-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.btn-icon {
+  background: transparent;
+  border: none;
+  font-size: 0.85rem;
+  padding: 2px 4px;
+  border-radius: 4px;
+  opacity: 0.6;
+  transition: opacity 0.15s, background 0.15s;
+}
+
+.btn-icon:hover {
+  opacity: 1;
+  background: rgba(255,255,255,0.1);
+}
+
+.btn-danger:hover {
+  background: rgba(233, 69, 96, 0.2);
+}
+
+.card-description {
+  font-size: 0.8rem;
+  color: #a0a0b0;
+  line-height: 1.4;
+}
+
+.card-assignee {
+  font-size: 0.78rem;
+  color: #8080a0;
+}
+
+.card-move {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-top: 2px;
+}
+
+.move-label {
+  font-size: 0.75rem;
+  color: #6060a0;
+}
+
+.btn-move {
+  font-size: 0.72rem;
+  background: #0f3460;
+  border: none;
+  border-radius: 4px;
+  color: #a0c0e0;
+  padding: 2px 8px;
+  transition: background 0.15s;
+}
+
+.btn-move:hover {
+  background: #1a4a80;
+}
+
+/* Modal */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.modal {
+  background: #16213e;
+  border: 1px solid #0f3460;
+  border-radius: 10px;
+  padding: 24px;
+  width: 420px;
+  max-width: 95vw;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal-header h3 {
+  font-size: 1.05rem;
+  color: #e0e0e0;
+}
+
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.modal-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.82rem;
+  color: #a0a0b0;
+  font-weight: 500;
+}
+
+.modal-form input,
+.modal-form textarea {
+  background: #1e2d50;
+  border: 1px solid #0f3460;
+  border-radius: 6px;
+  color: #e0e0e0;
+  padding: 8px 10px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.modal-form input:focus,
+.modal-form textarea:focus {
+  border-color: #e94560;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.btn-primary {
+  background: #e94560;
+  border: none;
+  border-radius: 6px;
+  color: white;
+  padding: 8px 18px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: background 0.15s;
+}
+
+.btn-primary:hover {
+  background: #c73650;
+}
+
+.btn-secondary {
+  background: transparent;
+  border: 1px solid #0f3460;
+  border-radius: 6px;
+  color: #a0a0b0;
+  padding: 8px 18px;
+  font-size: 0.9rem;
+  transition: background 0.15s, color 0.15s;
+}
+
+.btn-secondary:hover {
+  background: #0f3460;
+  color: #e0e0e0;
+}
+

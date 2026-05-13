@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, NavLink } from 'react-router-dom'
-import { BoardPage } from './pages/BoardPage'
 import { ComparePage } from './pages/ComparePage'
 import { WsProvider } from './ws/WsProvider'
+import { BoardRoute } from './board/BoardRoute'
 import './index.css'
 
 export function App() {
@@ -22,7 +22,7 @@ export function App() {
         </header>
         <main className="app-main">
           <Routes>
-            <Route path="/" element={<BoardPage />} />
+            <Route path="/" element={<BoardRoute />} />
             <Route path="/compare" element={<ComparePage />} />
           </Routes>
         </main>

@@ -36,6 +36,7 @@ function broadcast(wss: WebSocketServer, message: ServerMessage): void {
 function handleMessage(
   wss: WebSocketServer,
   socketId: string,
+  ws: WebSocket,
   raw: string
 ): void {
   let message: ClientMessage;
@@ -52,6 +53,11 @@ function handleMessage(
     case ClientEventType.UserJoin: {
       state.connectedUsers.set(socketId, message.userName);
       logger.info(CTX, "User joined", { socketId, userName: message.userName, totalUsers: state.connectedUsers.size });
+      send(ws, {
+        type: ServerEventType.BoardInit,
+        cards: boardService.getAllCards(),
+        users: Array.from(state.connectedUsers.values()),
+      });
       broadcast(wss, {
         type: ServerEventType.PresenceUpdate,
         users: Array.from(state.connectedUsers.values()),
@@ -128,14 +134,9 @@ export function attachWebSocketService(httpServer: HttpServer): void {
     const socketId = randomUUID();
     logger.info(CTX, "Client connected", { socketId, totalClients: wss.clients.size });
 
-    // Send full board state to the newly connected client
-    send(ws, {
-      type: ServerEventType.BoardInit,
-      cards: boardService.getAllCards(),
-      users: Array.from(state.connectedUsers.values()),
-    });
+    // board:init is sent in response to user:join (after the client has set up listeners)
 
-    ws.on("message", (raw) => handleMessage(wss, socketId, raw.toString()));
+    ws.on("message", (raw) => handleMessage(wss, socketId, ws, raw.toString()));
     ws.on("close", () => handleDisconnect(wss, socketId));
   });
 }

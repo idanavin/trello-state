@@ -9,13 +9,11 @@ This skill tracks the state management comparison study — the core deliverable
 
 ## Status
 
-> **UPDATE THIS SECTION** as approaches are chosen and implemented.
-
-| # | Approach | Library/Tools | Status |
-|---|----------|---------------|--------|
-| 1 | TBD | TBD | Not started |
-| 2 | TBD | TBD | Not started |
-| 3 | TBD (optional) | TBD | Not started |
+| # | Approach | Library/Tools | `?impl=` | Status |
+|---|----------|---------------|----------|--------|
+| 1 | Redux Toolkit | `@reduxjs/toolkit` + `reselect` | `redux` | Not started |
+| 2 | Zustand | `zustand` + Immer middleware | `zustand` | Not started |
+| 3 | TanStack Query *(optional)* | `@tanstack/react-query` | `tanstack` | Placeholder only |
 
 ---
 
@@ -28,14 +26,9 @@ This skill tracks the state management comparison study — the core deliverable
 
 ## Switching Between Implementations
 
-> **UPDATE** this section once the switching mechanism is decided.
+**Decided:** `?impl=redux` | `?impl=zustand` | `?impl=tanstack` query param — no rebuild required, cleanest for live demo and compare mode.
 
-**Current plan:** TBD — options include:
-- `?impl=zustand` / `?impl=redux` query param (cleanest for live demo)
-- `VITE_STATE_IMPL` environment variable (requires rebuild per switch)
-- React Router route per implementation (`/board/zustand`, `/board/redux`)
-
-**Recommended for live demo**: query param or route — allows switching without rebuilding.
+`App.tsx` reads the param and resolves a `BoardProvider` from a static `IMPL_REGISTRY` map. Adding a new implementation = one new entry in that map. No other file changes.
 
 ---
 
@@ -71,9 +64,9 @@ User action
 
 The shared `src/ws/client.ts` handles the raw socket connection and emits typed events. Each state implementation subscribes to these events in its own way:
 
-- **Redux**: dispatch actions from WS event handlers (middleware or thunk)
-- **Zustand**: call store setters directly from WS event callbacks
-- **Signals / other**: update signal/atom values from WS callbacks
+- **Redux**: dispatch actions from WS event handlers inside `useEffect` in `BoardProvider`
+- **Zustand**: call store actions directly from WS event callbacks in `BoardProvider`
+- **TanStack Query**: call `setQueryData` or `invalidateQueries` from WS event callbacks in `BoardProvider`
 
 ---
 
@@ -81,17 +74,17 @@ The shared `src/ws/client.ts` handles the raw socket connection and emits typed 
 
 > Add notes here as each implementation is built. These feed into JOURNAL.md.
 
-### Implementation 1 — TBD
+### Implementation 1 — Redux Toolkit
 - Trade-offs noticed:
 - Pain points:
 - Wins:
 
-### Implementation 2 — TBD
+### Implementation 2 — Zustand
 - Trade-offs noticed:
 - Pain points:
 - Wins:
 
-### Implementation 3 — TBD (if applicable)
+### Implementation 3 — TanStack Query *(placeholder)*
 - Trade-offs noticed:
 - Pain points:
 - Wins:

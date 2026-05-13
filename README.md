@@ -44,6 +44,7 @@ bun run dev        # http://localhost:3001  ws://localhost:3001
 | 2026-05-13 | State layer implemented | `BoardContext` contract, `BoardPage` agnostic consumer, Redux + Zustand + TanStack stub providers; `?impl=` registry in App.tsx; Compare page wired; build passes |
 | 2026-05-13 | WS lifecycle bug fixed | Prevented StrictMode cleanup from closing the active shared socket instance, restoring client→server event delivery |
 | 2026-05-13 | Zustand DevTools wired | Added Zustand `devtools` middleware and unique store names so state changes appear in Redux DevTools |
+| 2026-05-13 | TanStack Query implementation complete | `@tanstack/react-query@5.100.10` (pinned; router/start packages were compromised, react-query was not); `BoardProvider` uses `useQuery` as reactive cache subscriber + `setQueryData` for optimistic WS updates; `QueryClient` per instance for Compare mode isolation |
 
 ---
 
@@ -53,9 +54,9 @@ Add `?impl=<value>` to the URL — no rebuild required.
 
 | `?impl=` value | Approach | Status |
 |----------------|----------|--------|
-| `redux` | Redux Toolkit + Reselect | In progress |
-| `zustand` | Zustand + Immer | In progress |
-| `tanstack` | TanStack Query *(optional)* | Placeholder |
+| `redux` | Redux Toolkit + Reselect | Complete |
+| `zustand` | Zustand + Immer | Complete |
+| `tanstack` | TanStack Query | Complete |
 
 Compare two implementations side by side at `/compare`.
 
@@ -74,3 +75,5 @@ Compare two implementations side by side at `/compare`.
 | 2026-05-13 | `BoardContextValue` interface as UI–state DIP boundary | UI never imports from any store library; all implementations satisfy one shared interface via `BoardProvider`; Open/Closed registry in `App.tsx` |
 | 2026-05-13 | Keep shared WS client alive across dev StrictMode effect cycle | Effect cleanup in dev can run immediately after mount; deferred close + cancel-on-remount prevents accidental socket shutdown |
 | 2026-05-13 | Use Redux DevTools extension for Zustand inspection | Zustand `devtools` middleware emits to the Redux DevTools protocol; no separate Zustand browser extension is required |
+| 2026-05-14 | TanStack `BoardProvider` kept as a single file | No separate `store.ts` needed — `QueryClient` is a cache container with no extractable reducer/selector logic; all `setQueryData` calls are tightly coupled to WS event handlers |
+| 2026-05-14 | Pin `@tanstack/react-query` to `5.100.10` | `@tanstack/router` and `@tanstack/start` packages were compromised in the Mini Shai-Hulud supply-chain attack (2026-05-11); `react-query` was not affected but version is pinned for auditability |

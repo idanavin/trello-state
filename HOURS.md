@@ -9,3 +9,4 @@
 | 2026-05-13 | State layer: BoardContext contract, BoardPage, IMPL_REGISTRY in App.tsx, Redux + Zustand + TanStack stub providers, Compare page | 1.5 | 3.5 |
 | 2026-05-13 | Fixed WS StrictMode lifecycle disconnect and removed temporary debug instrumentation | 0.25 | 3.75 |
 | 2026-05-13 | Wired Zustand `devtools` middleware and unique store names for DevTools visibility | 0.25 | 4.0 |
+| 2026-05-13 | TanStack Query implementation: installed react-query@5.100.10, built full BoardProvider with useQuery + setQueryData optimistic pattern, fixed reactivity bug (getQueryData → useQuery) | 0.5 | 4.5 |

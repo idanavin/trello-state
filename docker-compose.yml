@@ -1,0 +1,19 @@
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "3001:3001"
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        # Baked into the JS bundle at build time — must be reachable from the browser.
+        # Change this value if deploying to a remote host.
+        VITE_WS_URL: ws://localhost:3001
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    restart: unless-stopped

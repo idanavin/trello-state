@@ -11,23 +11,35 @@ A Trello-like kanban board application built as a fullstack home assignment.
 | Database | In-memory (no DB) |
 
 ## Setup
-```bash
-# Frontend
-cd frontend
-bun install
-bun run dev        # http://localhost:5173
-bun run build      # production build
 
+### Docker (recommended)
+```bash
+docker compose up
+# Frontend → http://localhost:3000
+# Backend  → http://localhost:3001  ws://localhost:3001
+```
+
+Images are built automatically on first run. To rebuild after source changes: `docker compose up --build`
+
+To target a remote host, change `VITE_WS_URL` in [docker-compose.yml](docker-compose.yml) before running.
+
+### Local dev
+```bash
 # Backend
 cd backend
 bun install
 bun run dev        # http://localhost:3001  ws://localhost:3001
+
+# Frontend (new terminal)
+cd frontend
+bun install
+bun run dev        # http://localhost:5173
 ```
 
-**Environment variables:** (document new vars here as added)
-| Variable | Description |
-|----------|-------------|
-| `VITE_WS_URL` | WebSocket server URL (default: `ws://localhost:3001`) |
+**Environment variables:**
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `VITE_WS_URL` | WebSocket server URL (baked in at build time) | `ws://localhost:3001` |
 
 ---
 
@@ -45,6 +57,7 @@ bun run dev        # http://localhost:3001  ws://localhost:3001
 | 2026-05-13 | WS lifecycle bug fixed | Prevented StrictMode cleanup from closing the active shared socket instance, restoring client→server event delivery |
 | 2026-05-13 | Zustand DevTools wired | Added Zustand `devtools` middleware and unique store names so state changes appear in Redux DevTools |
 | 2026-05-13 | TanStack Query implementation complete | `@tanstack/react-query@5.100.10` (pinned; router/start packages were compromised, react-query was not); `BoardProvider` uses `useQuery` as reactive cache subscriber + `setQueryData` for optimistic WS updates; `QueryClient` per instance for Compare mode isolation || 2026-05-14 | Comparison visualization built | 3-pane Compare page (redux/zustand/tanstack fixed layout); per-impl `ImplStatsBar` showing render count, action count, WS events, cache hits, round-trip latency; strengths & trade-offs profiles; module-level `metricsStore` singleton wired into all three providers |
+| 2026-05-14 | Docker Compose added | `docker compose up --build` starts backend (port 3001) and frontend (port 80); multi-stage Nginx frontend build; `VITE_WS_URL` build arg for remote deployments |
 ---
 
 ## Switching Implementations

@@ -1,40 +1,40 @@
 import { Suspense } from 'react'
-import { useSearchParams } from 'react-router-dom'
-import { IMPL_REGISTRY, DEFAULT_IMPL, type ImplKey } from '../board/implRegistry'
+import { IMPL_REGISTRY } from '../board/implRegistry'
 import { BoardPage } from '../board/BoardPage'
+import { ImplStatsBar } from '../components/ImplStatsBar'
 
 // ---------------------------------------------------------------------------
-// ComparePage — renders two BoardProvider trees side by side.
-// Use ?implA=redux&implB=zustand to control which implementations are shown.
+// ComparePage — renders all three implementations side by side with per-impl
+// metrics bars showing render counts, action counts, WS events, cache hits,
+// and round-trip latency.
 // ---------------------------------------------------------------------------
+
+const PANES = [
+  { key: 'redux',    label: 'Redux Toolkit' },
+  { key: 'zustand',  label: 'Zustand' },
+  { key: 'tanstack', label: 'TanStack Query' },
+] as const
 
 export function ComparePage() {
-  const [searchParams] = useSearchParams()
-  const implA = (searchParams.get('implA') ?? DEFAULT_IMPL) as ImplKey
-  const implB = (searchParams.get('implB') ?? 'zustand') as ImplKey
-
-  const ProviderA = IMPL_REGISTRY[implA] ?? IMPL_REGISTRY[DEFAULT_IMPL]
-  const ProviderB = IMPL_REGISTRY[implB] ?? IMPL_REGISTRY[DEFAULT_IMPL]
-
   return (
     <div className="page-compare">
-      <div className="compare-pane">
-        <div className="compare-pane-label">{implA}</div>
-        <Suspense fallback={<div className="loading">Loading…</div>}>
-          <ProviderA>
-            <BoardPage />
-          </ProviderA>
-        </Suspense>
-      </div>
-      <div className="compare-divider" />
-      <div className="compare-pane">
-        <div className="compare-pane-label">{implB}</div>
-        <Suspense fallback={<div className="loading">Loading…</div>}>
-          <ProviderB>
-            <BoardPage />
-          </ProviderB>
-        </Suspense>
-      </div>
+      {PANES.map((pane, index) => {
+        const Provider = IMPL_REGISTRY[pane.key]
+        return (
+          <div key={pane.key} className="compare-pane">
+            {index > 0 && <div className="compare-divider" />}
+            <div className="compare-pane-inner">
+              <div className="compare-pane-label">{pane.label}</div>
+              <Suspense fallback={<div className="loading">Loading…</div>}>
+                <Provider>
+                  <BoardPage />
+                </Provider>
+              </Suspense>
+              <ImplStatsBar impl={pane.key} />
+            </div>
+          </div>
+        )
+      })}
     </div>
   )
 }

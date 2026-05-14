@@ -54,13 +54,15 @@ export function BoardPage() {
       <div className="board-instance-header">
         <PresenceBar users={connectedUsers} />
       </div>
-      <KanbanBoard
-        cards={cards}
-        onAddCard={handleAddCard}
-        onEditCard={handleEditCard}
-        onDeleteCard={handleDeleteCard}
-        onMoveCard={handleMoveCard}
-      />
+      <div className="board-scroll">
+        <KanbanBoard
+          cards={cards}
+          onAddCard={handleAddCard}
+          onEditCard={handleEditCard}
+          onDeleteCard={handleDeleteCard}
+          onMoveCard={handleMoveCard}
+        />
+      </div>
       {modal.mode !== 'closed' && (
         <CardModal
           initialValues={modal.mode === 'edit' ? modal.card : undefined}

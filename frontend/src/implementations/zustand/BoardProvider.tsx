@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
+import { createContext, useContext, useState, useEffect, useRef, type ReactNode } from 'react'
 import { useStore } from 'zustand'
 import { useShallow } from 'zustand/react/shallow'
 import { BoardContext, type BoardContextValue } from '../../board/BoardContext'
@@ -15,6 +15,9 @@ import type {
 import type { CardFormValues, ColumnId } from '../../types'
 import { createBoardStore, type ZustandBoardStore } from './store'
 import { getUserName } from '../../utils'
+import { recordRender, recordAction, recordWsEvent, recordRoundTrip } from '../../metrics/metricsStore'
+
+const IMPL_KEY = 'zustand'
 
 // ---------------------------------------------------------------------------
 // StoreContext — passes the store instance through the tree
@@ -35,6 +38,8 @@ function useBoardStore() {
 // ---------------------------------------------------------------------------
 
 function BoardContextBridge({ children }: { children: ReactNode }) {
+  useEffect(() => { recordRender(IMPL_KEY) })
+
   const wsClient = useWsClient()
   const store = useBoardStore()
 
@@ -42,12 +47,14 @@ function BoardContextBridge({ children }: { children: ReactNode }) {
   const connectedUsers = useStore(store, useShallow((s) => s.connectedUsers))
 
   const [pendingCreates] = useState<Map<string, string>>(() => new Map())
+  const lastActionTs = useRef<number | null>(null)
 
   useEffect(() => {
     const userName = getUserName()
 
     const unsubs = [
       wsClient.on<BoardInitMessage>(ServerEventType.BoardInit, (msg) => {
+        recordWsEvent(IMPL_KEY)
         store.getState().setBoard(msg.cards, msg.users)
       }),
       wsClient.on<CardCreatedMessage>(ServerEventType.CardCreated, (msg) => {
@@ -58,23 +65,45 @@ function BoardContextBridge({ children }: { children: ReactNode }) {
             break
           }
         }
-        if (matchedTempId !== undefined) {
-          pendingCreates.delete(matchedTempId)
-          store.getState().reconcileCreate(matchedTempId, msg.card)
+        const isEcho = matchedTempId !== undefined
+        recordWsEvent(IMPL_KEY, isEcho)
+        if (isEcho) {
+          if (lastActionTs.current !== null) {
+            recordRoundTrip(IMPL_KEY, Date.now() - lastActionTs.current)
+            lastActionTs.current = null
+          }
+          pendingCreates.delete(matchedTempId!)
+          store.getState().reconcileCreate(matchedTempId!, msg.card)
         } else {
           store.getState().upsertCard(msg.card)
         }
       }),
       wsClient.on<CardUpdatedMessage>(ServerEventType.CardUpdated, (msg) => {
+        recordWsEvent(IMPL_KEY)
+        if (lastActionTs.current !== null) {
+          recordRoundTrip(IMPL_KEY, Date.now() - lastActionTs.current)
+          lastActionTs.current = null
+        }
         store.getState().upsertCard(msg.card)
       }),
       wsClient.on<CardMovedMessage>(ServerEventType.CardMoved, (msg) => {
+        recordWsEvent(IMPL_KEY)
+        if (lastActionTs.current !== null) {
+          recordRoundTrip(IMPL_KEY, Date.now() - lastActionTs.current)
+          lastActionTs.current = null
+        }
         store.getState().moveCard(msg.id, msg.columnId)
       }),
       wsClient.on<CardDeletedMessage>(ServerEventType.CardDeleted, (msg) => {
+        recordWsEvent(IMPL_KEY)
+        if (lastActionTs.current !== null) {
+          recordRoundTrip(IMPL_KEY, Date.now() - lastActionTs.current)
+          lastActionTs.current = null
+        }
         store.getState().deleteCard(msg.id)
       }),
       wsClient.on<PresenceUpdateMessage>(ServerEventType.PresenceUpdate, (msg) => {
+        recordWsEvent(IMPL_KEY)
         store.getState().setPresence(msg.users)
       }),
     ]
@@ -89,6 +118,8 @@ function BoardContextBridge({ children }: { children: ReactNode }) {
     connectedUsers,
 
     addCard(columnId: ColumnId, values: CardFormValues) {
+      recordAction(IMPL_KEY)
+      lastActionTs.current = Date.now()
       const tempId = `temp-${crypto.randomUUID()}`
       pendingCreates.set(tempId, `${values.title}::${columnId}`)
       store.getState().upsertCard({ id: tempId, columnId, ...values })
@@ -96,6 +127,8 @@ function BoardContextBridge({ children }: { children: ReactNode }) {
     },
 
     editCard(cardId: string, values: CardFormValues) {
+      recordAction(IMPL_KEY)
+      lastActionTs.current = Date.now()
       const existing = store.getState().cards.find((c) => c.id === cardId)
       store.getState().upsertCard({
         id: cardId,
@@ -106,11 +139,15 @@ function BoardContextBridge({ children }: { children: ReactNode }) {
     },
 
     deleteCard(cardId: string) {
+      recordAction(IMPL_KEY)
+      lastActionTs.current = Date.now()
       store.getState().deleteCard(cardId)
       wsClient.send({ type: ClientEventType.CardDelete, id: cardId })
     },
 
     moveCard(cardId: string, toColumn: ColumnId) {
+      recordAction(IMPL_KEY)
+      lastActionTs.current = Date.now()
       store.getState().moveCard(cardId, toColumn)
       wsClient.send({ type: ClientEventType.CardMove, id: cardId, columnId: toColumn })
     },

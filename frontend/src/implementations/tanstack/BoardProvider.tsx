@@ -1,4 +1,4 @@
-import { useState, useEffect, type ReactNode } from 'react'
+import { useState, useEffect, useRef, type ReactNode } from 'react'
 import { QueryClient, QueryClientProvider, useQueryClient, useQuery } from '@tanstack/react-query'
 import { BoardContext, type BoardContextValue } from '../../board/BoardContext'
 import { useWsClient } from '../../ws/useWsClient'
@@ -13,6 +13,9 @@ import type {
 } from '../../ws/types'
 import type { Card, CardFormValues, ColumnId } from '../../types'
 import { getUserName } from '../../utils'
+import { recordRender, recordAction, recordWsEvent, recordRoundTrip } from '../../metrics/metricsStore'
+
+const IMPL_KEY = 'tanstack'
 
 // ---------------------------------------------------------------------------
 // Query keys
@@ -29,6 +32,8 @@ const QUERY_KEYS = {
 // ---------------------------------------------------------------------------
 
 function BoardContextBridge({ children }: { children: ReactNode }) {
+  useEffect(() => { recordRender(IMPL_KEY) })
+
   const wsClient = useWsClient()
   const queryClient = useQueryClient()
 
@@ -51,12 +56,14 @@ function BoardContextBridge({ children }: { children: ReactNode }) {
   })
 
   const [pendingCreates] = useState<Map<string, string>>(() => new Map())
+  const lastActionTs = useRef<number | null>(null)
 
   useEffect(() => {
     const userName = getUserName()
 
     const unsubs = [
       wsClient.on<BoardInitMessage>(ServerEventType.BoardInit, (msg) => {
+        recordWsEvent(IMPL_KEY)
         queryClient.setQueryData<Card[]>(QUERY_KEYS.cards, msg.cards)
         queryClient.setQueryData<string[]>(QUERY_KEYS.users, msg.users)
       }),
@@ -71,6 +78,13 @@ function BoardContextBridge({ children }: { children: ReactNode }) {
           }
         }
 
+        const isEcho = matchedTempId !== undefined
+        recordWsEvent(IMPL_KEY, isEcho)
+        if (isEcho && lastActionTs.current !== null) {
+          recordRoundTrip(IMPL_KEY, Date.now() - lastActionTs.current)
+          lastActionTs.current = null
+        }
+
         queryClient.setQueryData<Card[]>(QUERY_KEYS.cards, (prev = []) => {
           if (matchedTempId !== undefined) {
             pendingCreates.delete(matchedTempId)
@@ -83,24 +97,40 @@ function BoardContextBridge({ children }: { children: ReactNode }) {
       }),
 
       wsClient.on<CardUpdatedMessage>(ServerEventType.CardUpdated, (msg) => {
+        recordWsEvent(IMPL_KEY)
+        if (lastActionTs.current !== null) {
+          recordRoundTrip(IMPL_KEY, Date.now() - lastActionTs.current)
+          lastActionTs.current = null
+        }
         queryClient.setQueryData<Card[]>(QUERY_KEYS.cards, (prev = []) =>
           prev.map((c) => (c.id === msg.card.id ? msg.card : c)),
         )
       }),
 
       wsClient.on<CardMovedMessage>(ServerEventType.CardMoved, (msg) => {
+        recordWsEvent(IMPL_KEY)
+        if (lastActionTs.current !== null) {
+          recordRoundTrip(IMPL_KEY, Date.now() - lastActionTs.current)
+          lastActionTs.current = null
+        }
         queryClient.setQueryData<Card[]>(QUERY_KEYS.cards, (prev = []) =>
           prev.map((c) => (c.id === msg.id ? { ...c, columnId: msg.columnId } : c)),
         )
       }),
 
       wsClient.on<CardDeletedMessage>(ServerEventType.CardDeleted, (msg) => {
+        recordWsEvent(IMPL_KEY)
+        if (lastActionTs.current !== null) {
+          recordRoundTrip(IMPL_KEY, Date.now() - lastActionTs.current)
+          lastActionTs.current = null
+        }
         queryClient.setQueryData<Card[]>(QUERY_KEYS.cards, (prev = []) =>
           prev.filter((c) => c.id !== msg.id),
         )
       }),
 
       wsClient.on<PresenceUpdateMessage>(ServerEventType.PresenceUpdate, (msg) => {
+        recordWsEvent(IMPL_KEY)
         queryClient.setQueryData<string[]>(QUERY_KEYS.users, msg.users)
       }),
     ]
@@ -117,6 +147,8 @@ function BoardContextBridge({ children }: { children: ReactNode }) {
     connectedUsers,
 
     addCard(columnId: ColumnId, values: CardFormValues) {
+      recordAction(IMPL_KEY)
+      lastActionTs.current = Date.now()
       const tempId = `temp-${crypto.randomUUID()}`
       pendingCreates.set(tempId, `${values.title}::${columnId}`)
       // Optimistic: add immediately to the cache
@@ -128,6 +160,8 @@ function BoardContextBridge({ children }: { children: ReactNode }) {
     },
 
     editCard(cardId: string, values: CardFormValues) {
+      recordAction(IMPL_KEY)
+      lastActionTs.current = Date.now()
       // Optimistic: patch fields in the cache
       queryClient.setQueryData<Card[]>(QUERY_KEYS.cards, (prev = []) =>
         prev.map((c) => (c.id === cardId ? { ...c, ...values } : c)),
@@ -136,6 +170,8 @@ function BoardContextBridge({ children }: { children: ReactNode }) {
     },
 
     deleteCard(cardId: string) {
+      recordAction(IMPL_KEY)
+      lastActionTs.current = Date.now()
       queryClient.setQueryData<Card[]>(QUERY_KEYS.cards, (prev = []) =>
         prev.filter((c) => c.id !== cardId),
       )
@@ -143,6 +179,8 @@ function BoardContextBridge({ children }: { children: ReactNode }) {
     },
 
     moveCard(cardId: string, toColumn: ColumnId) {
+      recordAction(IMPL_KEY)
+      lastActionTs.current = Date.now()
       queryClient.setQueryData<Card[]>(QUERY_KEYS.cards, (prev = []) =>
         prev.map((c) => (c.id === cardId ? { ...c, columnId: toColumn } : c)),
       )

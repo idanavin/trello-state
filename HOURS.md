@@ -10,3 +10,4 @@
 | 2026-05-13 | Fixed WS StrictMode lifecycle disconnect and removed temporary debug instrumentation | 0.25 | 3.75 |
 | 2026-05-13 | Wired Zustand `devtools` middleware and unique store names for DevTools visibility | 0.25 | 4.0 |
 | 2026-05-13 | TanStack Query implementation: installed react-query@5.100.10, built full BoardProvider with useQuery + setQueryData optimistic pattern, fixed reactivity bug (getQueryData → useQuery) | 0.5 | 4.5 |
+| 2026-05-14 | Comparison visualization: metricsStore singleton, ImplStatsBar with profiles, 3-pane ComparePage, metrics wired into all three BoardProviders, CSS for stats bar | 1.0 | 5.5 |

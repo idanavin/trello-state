@@ -44,8 +44,7 @@ bun run dev        # http://localhost:3001  ws://localhost:3001
 | 2026-05-13 | State layer implemented | `BoardContext` contract, `BoardPage` agnostic consumer, Redux + Zustand + TanStack stub providers; `?impl=` registry in App.tsx; Compare page wired; build passes |
 | 2026-05-13 | WS lifecycle bug fixed | Prevented StrictMode cleanup from closing the active shared socket instance, restoring client→server event delivery |
 | 2026-05-13 | Zustand DevTools wired | Added Zustand `devtools` middleware and unique store names so state changes appear in Redux DevTools |
-| 2026-05-13 | TanStack Query implementation complete | `@tanstack/react-query@5.100.10` (pinned; router/start packages were compromised, react-query was not); `BoardProvider` uses `useQuery` as reactive cache subscriber + `setQueryData` for optimistic WS updates; `QueryClient` per instance for Compare mode isolation |
-
+| 2026-05-13 | TanStack Query implementation complete | `@tanstack/react-query@5.100.10` (pinned; router/start packages were compromised, react-query was not); `BoardProvider` uses `useQuery` as reactive cache subscriber + `setQueryData` for optimistic WS updates; `QueryClient` per instance for Compare mode isolation || 2026-05-14 | Comparison visualization built | 3-pane Compare page (redux/zustand/tanstack fixed layout); per-impl `ImplStatsBar` showing render count, action count, WS events, cache hits, round-trip latency; strengths & trade-offs profiles; module-level `metricsStore` singleton wired into all three providers |
 ---
 
 ## Switching Implementations
@@ -58,7 +57,7 @@ Add `?impl=<value>` to the URL — no rebuild required.
 | `zustand` | Zustand + Immer | Complete |
 | `tanstack` | TanStack Query | Complete |
 
-Compare two implementations side by side at `/compare`.
+Compare all three implementations side by side at `/compare`.
 
 ---
 
